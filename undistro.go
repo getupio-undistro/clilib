@@ -16,21 +16,69 @@ limitations under the License.
 
 package undistro
 
-type Command interface {
-	Create()
-	Install()
+import (
+	"context"
+	"fmt"
+	"io"
+	"sigs.k8s.io/cluster-api/test/framework/exec"
+)
+
+const baseCommand = "undistro"
+
+type CmdName string
+
+const (
+	Create  = CmdName("create")
+	Install = CmdName("install")
+)
+
+type CLI struct {
+	Writer io.Writer
 }
 
-type CommandOpts map[string]string
-
-type ClusterCommand struct {
-
+func NewCLI(writer io.Writer) CLI {
+	return CLI{
+		Writer: writer,
+	}
 }
 
-func (cc ClusterCommand) Create(...CommandOpts) {
+func (c CLI) CreateCluster(clusterName, namespace, provider, flavor string) (stdout, stderr string) {
+	inputs := []string{
+		string(Create), "cluster", clusterName,
+		"-n", namespace,
+		"--infra", provider,
+		"--flavor", flavor,
+		"--ssh-key-name", "undistro",
+		"--generate-file",
+	}
 
+	err := validateInputs(inputs)
+	if err != nil {
+		return
+	}
+
+	cmd := exec.NewCommand(
+		exec.WithCommand(baseCommand),
+		exec.WithArgs(inputs...),
+		)
+	_, err = fmt.Fprintf(c.Writer, "Running command: %s\n", cmd.Cmd)
+	if err != nil {
+		return
+	}
+
+	outByt, errByt, err := cmd.Run(context.Background())
+	if err != nil {
+		_, err = fmt.Fprintf(c.Writer, "Error: %s\n", err.Error())
+		if err != nil {
+			return
+		}
+	}
+
+	stdout = string(outByt)
+	stderr = string(errByt)
+	return
 }
 
-func (cc ClusterCommand) Install(...CommandOpts) {
-
+func validateInputs([]string) error {
+	return nil
 }
