@@ -32,6 +32,13 @@ const (
 	Install = CmdName("install")
 )
 
+type ProviderName string
+
+const (
+	AWS = ProviderName("aws")
+	OpenStack = ProviderName("openstack")
+)
+
 type CLI struct {
 	Writer io.Writer
 }
@@ -42,26 +49,34 @@ func NewCLI(writer io.Writer) CLI {
 	}
 }
 
-func (c CLI) CreateCluster(clusterName, namespace, provider, flavor string) (stdout, stderr string) {
+func (c CLI) CreateCluster(clusterName, namespace, provider, flavor string, generateFile bool) (stdout, stderr string) {
 	inputs := []string{
 		string(Create), "cluster", clusterName,
 		"-n", namespace,
 		"--infra", provider,
-		"--flavor", flavor,
 		"--ssh-key-name", "undistro",
-		"--generate-file",
 	}
 
-	err := validateInputs(inputs)
-	if err != nil {
-		return
+	if generateFile {
+		inputs = append(inputs, "--generate-file")
+	}
+
+	switch provider {
+	case string(AWS):
+		if flavor == "" {
+			return "", "AWS provider requires a flavor"
+		}
+		inputs = append(inputs, "--flavor", flavor)
+	case string(OpenStack):
+	default:
+		return "", "Invalid provider"
 	}
 
 	cmd := exec.NewCommand(
 		exec.WithCommand(baseCommand),
 		exec.WithArgs(inputs...),
 		)
-	_, err = fmt.Fprintf(c.Writer, "Running command: %s\n", cmd.Cmd)
+	_, err := fmt.Fprintf(c.Writer, "Running command: %s\n", cmd.Cmd)
 	if err != nil {
 		return
 	}
@@ -77,8 +92,4 @@ func (c CLI) CreateCluster(clusterName, namespace, provider, flavor string) (std
 	stdout = string(outByt)
 	stderr = string(errByt)
 	return
-}
-
-func validateInputs([]string) error {
-	return nil
 }
