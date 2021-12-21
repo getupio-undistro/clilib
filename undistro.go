@@ -43,22 +43,11 @@ func NewCLI(writer io.Writer) CLI {
 	}
 }
 
-func (c CLI) CreateCluster(clusterName, namespace, provider, flavor string, generateFile bool) (stdout, stderr string) {
-	inputs := []string{
-		string(Create), "cluster", clusterName,
-		"-n", namespace,
-		"--infra", provider,
-		"--flavor", flavor,
-		"--ssh-key-name", "undistro",
-	}
-
-	if generateFile {
-		inputs = append(inputs, "--generate-file")
-	}
-
+func (c CLI) CreateCluster(args []string) (stdout, stderr string) {
 	cmd := exec.NewCommand(
 		exec.WithCommand(baseCommand),
-		exec.WithArgs(inputs...),
+		exec.WithArgs(string(Create)),
+		exec.WithArgs(args...),
 		)
 	_, err := fmt.Fprintf(c.Writer, "Running command: %s\n", cmd.Cmd)
 	if err != nil {
