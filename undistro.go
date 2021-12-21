@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+
 	"sigs.k8s.io/cluster-api/test/framework/exec"
 )
 
@@ -30,13 +31,6 @@ type CmdName string
 const (
 	Create  = CmdName("create")
 	Install = CmdName("install")
-)
-
-type ProviderName string
-
-const (
-	AWS = ProviderName("aws")
-	OpenStack = ProviderName("openstack")
 )
 
 type CLI struct {
@@ -54,22 +48,12 @@ func (c CLI) CreateCluster(clusterName, namespace, provider, flavor string, gene
 		string(Create), "cluster", clusterName,
 		"-n", namespace,
 		"--infra", provider,
+		"--flavor", flavor,
 		"--ssh-key-name", "undistro",
 	}
 
 	if generateFile {
 		inputs = append(inputs, "--generate-file")
-	}
-
-	switch provider {
-	case string(AWS):
-		if flavor == "" {
-			return "", "AWS provider requires a flavor"
-		}
-		inputs = append(inputs, "--flavor", flavor)
-	case string(OpenStack):
-	default:
-		return "", "Invalid provider"
 	}
 
 	cmd := exec.NewCommand(
