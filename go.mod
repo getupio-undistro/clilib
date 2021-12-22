@@ -1,4 +1,4 @@
-module github.com/getupio-undistro/cli-lib
+module github.com/getupio-undistro/clilib
 
 go 1.17
 
