@@ -26,18 +26,16 @@ import (
 
 const baseCommand = "undistro"
 
-type CmdName string
-
 const (
-	Create  = CmdName("create")
-	Install = CmdName("install")
+	Create  = "create"
+	Install = "install"
 	Upgrade = "upgrade"
 	Get     = "get"
 	Move    = "move"
 	Logs    = "logs"
 	Rollout = "rollout"
 	Delete  = "delete"
-	Delete  = "apply"
+	Apply  = "apply"
 )
 
 type CLI struct {
@@ -50,23 +48,23 @@ func NewCLI(writer io.Writer) CLI {
 	}
 }
 
-//// Executes an Undistro command with the parameterized argumments.
-func (c CLI) UndistroExec(cmd CmdName, args ...string) (stdout, stderr string, err error) {
+// UndistroExec executes an Undistro command with the parameterized argumments.
+func (c CLI) UndistroExec(cmdName string, args ...string) (stdout, stderr string, err error) {
 	cmd := exec.NewCommand(
 		exec.WithCommand(baseCommand),
-		exec.WithArgs(cmd),
+		exec.WithArgs(cmdName),
 		exec.WithArgs(args...),
 	)
-	_, err := fmt.Fprintf(c.Writer, "Running command: %s\n", cmd.Cmd)
+	_, err = fmt.Fprintf(c.Writer, "Running command: %s\n", cmd.Cmd)
 	if err != nil {
-		return
+		return "", err.Error(), err
 	}
 
 	outByt, errByt, err := cmd.Run(context.Background())
 	if err != nil {
 		_, err = fmt.Fprintf(c.Writer, "Error: %s\n", err.Error())
 		if err != nil {
-			return
+			return "", err.Error(), err
 		}
 	}
 
@@ -75,42 +73,42 @@ func (c CLI) UndistroExec(cmd CmdName, args ...string) (stdout, stderr string, e
 	return
 }
 
-//// Executes "undistro create <args>".
+// Create executes "undistro create <args>".
 func (c *CLI) Create(args ...string) (string, string, error) {
 	return c.UndistroExec(Create, args...)
 }
 
-//// Executes "undistro install <args>".
+// Install executes "undistro install <args>".
 func (c *CLI) Install(args ...string) (string, string, error) {
 	return c.UndistroExec(Install, args...)
 }
 
-//// Executes "undistro delete <args>".
+// Delete executes "undistro delete <args>".
 func (c *CLI) Delete(args ...string) (string, string, error) {
 	return c.UndistroExec(Delete, args...)
 }
 
-//// Executes "undistro move <args>".
+// Move executes "undistro move <args>".
 func (c *CLI) Move(args ...string) (string, string, error) {
 	return c.UndistroExec(Move, args...)
 }
 
-//// Executes "undistro upgrade <args>".
+// Upgrade executes "undistro upgrade <args>".
 func (c *CLI) Upgrade(args ...string) (string, string, error) {
 	return c.UndistroExec(Upgrade, args...)
 }
 
-//// Executes "undistro rollout <args>".
+// Rollout executes "undistro rollout <args>".
 func (c *CLI) Rollout(args ...string) (string, string, error) {
 	return c.UndistroExec(Rollout, args...)
 }
 
-//// Executes "undistro logs <args>".
+// Logs executes "undistro logs <args>".
 func (c *CLI) Logs(args ...string) (string, string, error) {
 	return c.UndistroExec(Logs, args...)
 }
 
-//// Executes "undistro apply <args>".
+// Apply executes "undistro apply <args>".
 func (c *CLI) Apply(args ...string) (string, string, error) {
 	return c.UndistroExec(Apply, args...)
 }
