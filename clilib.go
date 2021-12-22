@@ -112,3 +112,8 @@ func (c *CLI) Logs(args ...string) (string, string, error) {
 func (c *CLI) Apply(args ...string) (string, string, error) {
 	return c.UndistroExec(Apply, args...)
 }
+
+// Get executes "undistro get <args>".
+func (c *CLI) Get(args ...string) (string, string, error) {
+	return c.UndistroExec(Get, args...)
+}
