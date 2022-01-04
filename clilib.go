@@ -35,7 +35,7 @@ const (
 	Logs    = "logs"
 	Rollout = "rollout"
 	Delete  = "delete"
-	Apply  = "apply"
+	Apply   = "apply"
 )
 
 type CLI struct {
@@ -52,8 +52,7 @@ func NewCLI(writer io.Writer) CLI {
 func (c CLI) UndistroExec(cmdName string, args ...string) (stdout, stderr string, err error) {
 	cmd := exec.NewCommand(
 		exec.WithCommand(baseCommand),
-		exec.WithArgs(cmdName),
-		exec.WithArgs(args...),
+		exec.WithArgs(append([]string{cmdName}, args...)...),
 	)
 	_, err = fmt.Fprintf(c.Writer, "Running command: %s\n", cmd.Cmd)
 	if err != nil {
