@@ -54,17 +54,20 @@ func (c CLI) UndistroExec(cmdName string, args ...string) (stdout, stderr string
 		exec.WithCommand(baseCommand),
 		exec.WithArgs(append([]string{cmdName}, args...)...),
 	)
-	_, err = fmt.Fprintf(c.Writer, "Running command: %s\n", cmd.Cmd)
-	if err != nil {
-		return "", err.Error(), err
-	}
 
-	outByt, errByt, err := cmd.Run(context.Background())
-	if err != nil {
-		_, err = fmt.Fprintf(c.Writer, "Error: %s\n", err.Error())
+	if c.Writer != nil {
+		_, err = fmt.Fprintf(c.Writer, "Running command: %s\n", cmd.Cmd)
 		if err != nil {
 			return "", err.Error(), err
 		}
+
+	}
+	outByt, errByt, err := cmd.Run(context.Background())
+	if err != nil {
+		if c.Writer != nil {
+			_, err = fmt.Fprintf(c.Writer, "Error: %s\n", err.Error())
+		}
+		return "", err.Error(), err
 	}
 
 	stdout = string(outByt)
