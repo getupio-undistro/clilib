@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"os"
 
 	"sigs.k8s.io/cluster-api/test/framework/exec"
 )
@@ -55,18 +56,19 @@ func (c CLI) UndistroExec(cmdName string, args ...string) (stdout, stderr string
 		exec.WithArgs(append([]string{cmdName}, args...)...),
 	)
 
-	if c.Writer != nil {
-		_, err = fmt.Fprintf(c.Writer, "Running command: %s\n", cmd.Cmd)
-		if err != nil {
-			return "", err.Error(), err
-		}
-
+	// If no writer is passed, default stdout is used
+	if c.Writer == nil {
+		c.Writer = os.Stdout
 	}
+
+	_, err = fmt.Fprintf(c.Writer, "Running command: %s\n", cmd.Cmd)
+	if err != nil {
+		return "", err.Error(), err
+	}
+
 	outByt, errByt, err := cmd.Run(context.Background())
 	if err != nil {
-		if c.Writer != nil {
-			_, err = fmt.Fprintf(c.Writer, "Error: %s\n", err.Error())
-		}
+		_, err = fmt.Fprintf(c.Writer, "Error: %s\n", err.Error())
 		return "", err.Error(), err
 	}
 
