@@ -20,7 +20,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"os"
 
 	"sigs.k8s.io/cluster-api/test/framework/exec"
 )
